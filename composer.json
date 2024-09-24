@@ -1,0 +1,10 @@
+{
+  "require": {
+    "ext-readline": "*"
+  },
+    "autoload": {
+        "psr-4": {
+        "PHPLox\\": "src/"
+        }
+    }
+}
