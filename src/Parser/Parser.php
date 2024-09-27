@@ -10,6 +10,9 @@ use PHPLox\Parser\Expr\Binary;
 use PHPLox\Parser\Expr\Grouping;
 use PHPLox\Parser\Expr\Literal;
 use PHPLox\Parser\Expr\Unary;
+use PHPLox\Parser\Stmt\ExpressionStmt;
+use PHPLox\Parser\Stmt\PrintStmt;
+use PHPLox\Parser\Stmt\Stmt;
 use PHPLox\Scanner\Token\Token;
 use PHPLox\Scanner\Token\TokenType;
 
@@ -41,17 +44,61 @@ class Parser
     }
 
     /**
-     * Parses the tokens and returns the resulting expression.
+     * Parses the list of tokens and returns a list of statements.
      *
-     * @return Binary|Unary|Grouping|Literal|null The parsed expression or null if a parse error occurs.
+     * @return Stmt[] The list of parsed statements.
      */
-    public function parse(): Binary|Unary|Grouping|Literal|null
+    public function parse(): array
     {
-        try {
-            return $this->expression();
-        } catch (ParseError $e) {
-            return null;
+        $statements = [];
+
+        while (!$this->is_at_end()) {
+            $statements[] = $this->statement();
         }
+
+        return $statements;
+    }
+
+    /**
+     * Parses a statement.
+     *
+     * @return ExpressionStmt|PrintStmt The parsed statement.
+     */
+    private function statement(): ExpressionStmt|PrintStmt
+    {
+        if ($this->match(TokenType::PRINT)) {
+            return $this->print_statement();
+        }
+
+        return $this->expression_statement();
+    }
+
+    /**
+     * Parses a print statement.
+     *
+     * @return PrintStmt The parsed print statement.
+     */
+    private function print_statement(): PrintStmt
+    {
+        $value = $this->expression();
+
+        $this->consume(TokenType::SEMICOLON, "Expect ';' after value.");
+
+        return new PrintStmt($value);
+    }
+
+    /**
+     * Parses an expression statement.
+     *
+     * @return ExpressionStmt The parsed expression statement.
+     */
+    private function expression_statement(): ExpressionStmt
+    {
+        $expr = $this->expression();
+
+        $this->consume(TokenType::SEMICOLON, "Expect ';' after expression.");
+
+        return new ExpressionStmt($expr);
     }
 
     /**
