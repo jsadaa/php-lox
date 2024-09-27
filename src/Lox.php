@@ -70,6 +70,28 @@ final class Lox
     }
 
     /**
+     * Reads the contents of a file.
+     *
+     * This method opens the specified file, reads its contents, and returns them as a string.
+     * If the file cannot be opened, it exits with an error code.
+     *
+     * @param string $path The path to the file.
+     * @return string The contents of the file.
+     */
+    private function read_file(string $path): string
+    {
+        $file_handle = \fopen($path, 'rb');
+
+        if ($file_handle === false) {
+            \fwrite(STDERR, "Could not open file \"$path\".\n");
+            exit(66);
+        }
+        $file_size = \filesize($path);
+
+        return \fread($file_handle, $file_size);
+    }
+
+    /**
      * Runs the interpreter in file mode.
      *
      * This method reads the source code from the specified file and runs the interpreter on it.
@@ -91,28 +113,6 @@ final class Lox
         if (Lox::$had_runtime_error) {
             exit(70);
         }
-    }
-
-    /**
-     * Reads the contents of a file.
-     *
-     * This method opens the specified file, reads its contents, and returns them as a string.
-     * If the file cannot be opened, it exits with an error code.
-     *
-     * @param string $path The path to the file.
-     * @return string The contents of the file.
-     */
-    private function read_file(string $path): string
-    {
-        $file_handle = \fopen($path, 'rb');
-
-        if ($file_handle === false) {
-            \fwrite(STDERR, "Could not open file \"$path\".\n");
-            exit(66);
-        }
-        $file_size = \filesize($path);
-
-        return \fread($file_handle, $file_size);
     }
 
     /**
@@ -151,17 +151,13 @@ final class Lox
         $tokens = $scanner->scan_tokens();
 
         $parser = new Parser($tokens);
-        $expression = $parser->parse();
+        $statements = $parser->parse();
 
         if (Lox::$had_errors) {
             return;
         }
 
-        $result = self::$interpreter->interpret($expression);
-
-        if ($result !== null) {
-            \fwrite(STDOUT, $result . "\n");
-        }
+        self::$interpreter->interpret($statements);
 
         Lox::$had_runtime_error = false;
 

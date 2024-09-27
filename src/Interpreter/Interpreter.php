@@ -9,8 +9,12 @@ use PHPLox\Parser\Expr\Expr;
 use PHPLox\Parser\Expr\Grouping;
 use PHPLox\Parser\Expr\Literal;
 use PHPLox\Parser\Expr\Unary;
+use PHPLox\Parser\Stmt\ExpressionStmt;
+use PHPLox\Parser\Stmt\PrintStmt;
+use PHPLox\Parser\Stmt\Stmt;
 use PHPLox\Scanner\Token\TokenType;
 use PHPLox\Visitor\ExprVisitor;
+use PHPLox\Visitor\StmtVisitor;
 
 /**
  * Class Interpreter
@@ -18,24 +22,63 @@ use PHPLox\Visitor\ExprVisitor;
  * This class implements the interpreter for the Lox language. It evaluates expressions and returns the result of the
  * interpretation.
  */
-class Interpreter implements ExprVisitor
+class Interpreter implements ExprVisitor, StmtVisitor
 {
+
     /**
-     * Interpret the given expression.
+     * Interpret the given statements.
      *
-     * @param Expr $expr The expression to interpret.
-     *
-     * @return string|null The result of the interpretation.
+     * @param array $statements The statements to interpret.
      */
-    public function interpret(Expr $expr): ?string
+    public function interpret(array $statements): void
     {
         try {
-            $value = $this->evaluate($expr);
-            return $this->stringify($value);
+            $stmts_count = count($statements);
+
+            for ($i = 0; $i < $stmts_count; $i++) {
+                $this->execute($statements[$i]);
+            }
+
         } catch (RuntimeError $error) {
             Lox::runtime_error($error);
-            return null;
         }
+    }
+
+    /**
+     * Execute the given statement.
+     *
+     * @param Stmt $stmt The statement to execute.
+     */
+    private function execute(Stmt $stmt): void
+    {
+        $stmt->accept($this);
+    }
+
+    /**
+     * Evaluate the given expression statement.
+     *
+     * @param ExpressionStmt $expr_stmt The expression statement to evaluate.
+     *
+     * @return mixed The result of the evaluation.
+     */
+    public function visitExpressionStmt(ExpressionStmt $expr_stmt): mixed
+    {
+        $this->evaluate($expr_stmt->expression);
+        return null;
+    }
+
+    /**
+     * Evaluate the given print statement.
+     *
+     * @param PrintStmt $print_stmt The print statement to evaluate.
+     *
+     * @return mixed The result of the evaluation.
+     */
+    public function visitPrintStmt(PrintStmt $print_stmt): mixed
+    {
+        $value = $this->evaluate($print_stmt->expression);
+        \fwrite(\STDOUT, $this->stringify($value) . "\n");
+        return null;
     }
 
     /**
