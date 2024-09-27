@@ -3,12 +3,12 @@
 namespace PHPLox\Visitor;
 
 use PHPLox\Parser\Stmt\{
-    Expression,
+    ExpressionStmt,
     PrintStmt,
 };
 
 interface StmtVisitor
 {
-    public function visitExpression(Expression $expression): mixed;
+    public function visitExpressionStmt(ExpressionStmt $expr_stmt): mixed;
     public function visitPrintStmt(PrintStmt $printstmt): mixed;
 }
