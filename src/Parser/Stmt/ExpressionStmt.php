@@ -7,7 +7,7 @@ namespace PHPLox\Parser\Stmt;
 use PHPLox\Parser\Expr\Expr;
 use PHPLox\Visitor\StmtVisitor;
 
-final readonly class Expression extends Stmt
+final readonly class ExpressionStmt extends Stmt
 {
     public function __construct(
         public Expr $expression, 
@@ -17,6 +17,6 @@ final readonly class Expression extends Stmt
 
     public function accept(StmtVisitor $visitor): mixed
     {
-        return $visitor->visitExpression($this);
+        return $visitor->visitExpressionStmt($this);
     }
 }
