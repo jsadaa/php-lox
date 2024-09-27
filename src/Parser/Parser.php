@@ -236,7 +236,9 @@ class Parser
      */
     private function match(TokenType ...$types): bool
     {
-        for ($i = 0; $i < count($types) ; $i++) {
+        $types_count = \count($types);
+
+        for ($i = 0; $i < $types_count ; $i++) {
             if ($this->check($types[$i])) {
                 $this->advance();
                 return true;
